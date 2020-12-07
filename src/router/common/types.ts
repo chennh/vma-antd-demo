@@ -1,0 +1,2 @@
+export const PAGE404 = 'COMMON/PAGE404'
+export const MAINTAIN = 'COMMON/MAINTAIN'

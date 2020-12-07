@@ -1,0 +1,19 @@
+@import 'reset.scss';
+@import 'base.scss';
+@import 'scroll.scss';
+@import 'icon.scss';
+
+// plugin
+@import 'plugin/animate.min.css';
+@import 'plugin/antDesign.scss';
+
+// page
+@import 'page/login.scss';
+@import 'page/frame.scss';
+
+// response
+@import './response/1920';
+@import './response/1440';
+// @import './response/1280';
+// @import './response/1024';
+// @import './response/720';

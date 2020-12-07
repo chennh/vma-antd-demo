@@ -1,0 +1,5 @@
+export const AFTER_LOGIN = 'AFTER_LOGIN'
+export const AFTER_LOGOUT = 'AFTER_LOGOUT'
+export const LOGOUT = 'LOGOUT'
+export const LOGOUT_BROADCAST = 'LOGOUT_BROADCAST'
+export const REGET_ADMIN_INFO = 'REGET_ADMIN_INFO'

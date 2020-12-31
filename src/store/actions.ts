@@ -15,29 +15,27 @@ import {
 import {
   message
 } from 'ant-design-vue'
-import LoginBO from '@/api/common/v1.0/definitions/LoginBO'
-import { AccountApi } from '@/api/common/v1.0/accountApi'
-import { connect, disconnect } from '../socket/index'
 
+type LoginBO = any
 const actions: ActionTree<State, any> = {
   // 登录后处理
   [actionTypes.AFTER_LOGIN]: (
     { commit }: ActionContext<State, any>,
     data: LoginBO) => {
-    commit(mutationTypes.SET_ADMIN_INFO, data)
-    adminInfoSession.setJSON(data)
-    macKeyCookie.set(data.macKey)
-    loginTypeLocal.set(String(data.type))
+    // commit(mutationTypes.SET_ADMIN_INFO, data)
+    // adminInfoSession.setJSON(data)
+    // macKeyCookie.set(data.macKey)
+    // loginTypeLocal.set(String(data.type))
   },
   // 登出后处理
   [actionTypes.AFTER_LOGOUT]: (
     { commit }: ActionContext<State, any>
   ) => {
-    commit(mutationTypes.SET_ADMIN_INFO, {})
-    adminInfoSession.remove()
-    frameActiveMenuSession.remove()
-    macKeyCookie.remove()
-    disconnect()
+    // commit(mutationTypes.SET_ADMIN_INFO, {})
+    // adminInfoSession.remove()
+    // frameActiveMenuSession.remove()
+    // macKeyCookie.remove()
+    // disconnect()
   },
   // 登出
   [actionTypes.LOGOUT]: (
@@ -52,22 +50,22 @@ const actions: ActionTree<State, any> = {
   [actionTypes.LOGOUT_BROADCAST]: (
     { dispatch }: ActionContext<State, any>,
     silence = true) => {
-    // 登出不论成功失败强制执行
-    return AccountApi.logout({ errorHandle: false }).finally(() => {
-      if (!silence) {
-        message.success('登出成功')
-      }
-      dispatch(actionTypes.AFTER_LOGOUT)
-      redirectToLogin()
-    })
+    // // 登出不论成功失败强制执行
+    // return AccountApi.logout({ errorHandle: false }).finally(() => {
+    //   if (!silence) {
+    //     message.success('登出成功')
+    //   }
+    //   dispatch(actionTypes.AFTER_LOGOUT)
+    //   redirectToLogin()
+    // })
   },
   // 重新获取登录用户信息
   [actionTypes.REGET_ADMIN_INFO]: (
     { dispatch }: ActionContext<State, any>) => {
-    return AccountApi.menuList().then(data => {
-      dispatch(actionTypes.AFTER_LOGIN, data)
-      return data
-    })
+    // return AccountApi.menuList().then(data => {
+    //   dispatch(actionTypes.AFTER_LOGIN, data)
+    //   return data
+    // })
   }
 }
 

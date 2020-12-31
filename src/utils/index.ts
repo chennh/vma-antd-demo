@@ -20,12 +20,3 @@ RouterWrapper.extendConfig({
 
 export * from 'vma-assist/dist/static/js/utils'
 export * from 'vma-assist/dist/static/js/tools/vue'
-export * from './date'
-
-export const empty = (value: string, placerholder = '--') => {
-  return !!value ? value : placerholder
-}
-
-export const getLastChar = (value: string) => {
-  return !!value ? String(value).substr(value.length - 1) : '-'
-}

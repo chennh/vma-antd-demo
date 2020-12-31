@@ -11,12 +11,6 @@ import { RouterWrapper } from '@/utils'
 import store from '@/store'
 import * as actionTypes from '@/store/actionTypes'
 import { message } from 'ant-design-vue'
-import {
-  hasEnterprise,
-  isEnterpriseComplete,
-  isEnterprisePendingAudit,
-  isSystem,
-} from '@/utils/adminInfo'
 
 Vue.use(VueRouter)
 

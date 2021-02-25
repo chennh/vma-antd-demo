@@ -120,10 +120,10 @@ export function handleResponseError(error: AxiosError, handleMaintainFn?: (error
       handleMaintain(error)
     } else if (error.response.data != null) {
       // 企业已禁用
-      if (error.response.data.code === 'DISABLE') {
-        return main.$emitBus(EventBus.Frame.invalid)
+      // if (error.response.data.code === 'DISABLE') {
+      //   return main.$emitBus(EventBus.Frame.invalid)
 
-      }
+      // }
       if (error.response.data.businessException === true) {
         handleError(error.response.data)
       } else {

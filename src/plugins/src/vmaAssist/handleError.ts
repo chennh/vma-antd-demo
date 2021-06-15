@@ -12,12 +12,10 @@ import {
 import store from '@/store'
 import * as actionTypes from '@/store/actionTypes'
 import {
-  adminInfoSession,
-  adminInfoSessionHasData
+  loginRespSession,
+  loginRespSessionHasData
 } from '@/storage'
 import { AxiosError } from 'axios'
-import EventBus from '@/constants/eventBus'
-import main from '@/main'
 
 function handleError(data: any) {
   message.warn(data.message)
@@ -34,7 +32,7 @@ function handleException(error: any) {
   if (exceptionMessageHasShow === false) {
     if (isDev) {
       Modal.error({
-        title: message || '系统提示',
+        title: `${status}-${message || '系统提示'}`,
         content: (h: any) => {
           return h('div', {
             style: {
@@ -76,12 +74,12 @@ export function handle401(response: any) {
         message = '授权过期，请重新登录'
     }
     // 登录状态下才做401提示
-    if (adminInfoSessionHasData()) {
+    if (loginRespSessionHasData()) {
       handleError({
         message
       })
     }
-    adminInfoSession.remove()
+    loginRespSession.remove()
     // 未登录/登录授权过期
     redirectToLogin()
     setTimeout(() => {
@@ -119,17 +117,12 @@ export function handleResponseError(error: AxiosError, handleMaintainFn?: (error
     } else if (error.response.status === 502) {
       handleMaintain(error)
     } else if (error.response.data != null) {
-      // 企业已禁用
-      // if (error.response.data.code === 'DISABLE') {
-      //   return main.$emitBus(EventBus.Frame.invalid)
-
-      // }
       if (error.response.data.businessException === true) {
         handleError(error.response.data)
       } else {
         handleException({
-          status: error.response.status,
-          message: error.message,
+          status: `${error.response.status}${error.response.data.code ? '(' + error.response.data.code + ')' : ''}`,
+          message: `${error.response.data.message}`,
           stack: error.response.data.stackTrace ? (error.response.data.stackTrace || []).map((v: any) => `${v.className}.${v.methodName}(${v.lineNumber})`)
             .join('<br />') : error.stack
         })

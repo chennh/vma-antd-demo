@@ -44,7 +44,6 @@ import FormMixin from '@/mixins/src/formMixin'
 import { Getter } from 'vuex-class'
 import { AccountApi } from '@/api/common/v1.0/accountApi'
 import { passwordValidator, reValueValidator } from '@/assets/js/validators'
-import { PlatformApi } from '@/api/common/v1.0/platformApi'
 
 @Component
 export default class ModifyPassword extends mixins(FormMixin) {
@@ -68,7 +67,7 @@ export default class ModifyPassword extends mixins(FormMixin) {
   }
 
   protected saveOrUpdate(entity: any) {
-    PlatformApi.updatePassword(Object.assign({}, this.entity)).then(() => {
+    AccountApi.modifyPassword(Object.assign({}, this.entity)).then(() => {
       this.emitSubmit()
     })
   }

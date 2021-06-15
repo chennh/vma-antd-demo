@@ -24,16 +24,14 @@ export default class Login extends Vue {
 
   private autoGotoLogin() {
     if (!loginRouterWrapper.isRouter(this.$route.name)) {
-      const loginType = Number(loginTypeLocal.get())
+      const loginType = loginTypeLocal.get()
       switch (loginType) {
         case LoginTypeEnum.SUPER:
           return this.gotoLogin(loginTypes.SUPER)
-        case LoginTypeEnum.OEM:
-          return this.gotoLogin(loginTypes.OEM)
-        case LoginTypeEnum.AGENT:
-          return this.gotoLogin(loginTypes.AGENT)
+        case LoginTypeEnum.OPERATIONS_CENTER:
+          return this.gotoLogin(loginTypes.OPERATIONS_CENTER)
         default:
-          this.gotoLogin(loginTypes.SYSTEM)
+          this.gotoLogin(loginTypes.OPERATIONS_CENTER)
       }
     }
   }

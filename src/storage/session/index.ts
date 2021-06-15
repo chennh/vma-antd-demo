@@ -19,13 +19,13 @@ import * as names from './names'
  */
 
 // 当前登录用户
-export const adminInfoSession = new SessionItem({
+export const loginRespSession = new SessionItem({
   name: names.ADMIN_INFO
 })
 // 当前对象中是否有存储着正确的用户数据
-export const adminInfoSessionHasData = () => {
-  const adminInfo = adminInfoSession.getJSON()
-  return !!(adminInfo && adminInfo.macKey)
+export const loginRespSessionHasData = () => {
+  const loginResp = loginRespSession.getJSON()
+  return !!(loginResp && loginResp.macKey)
 }
 
 // 当前激活的菜单

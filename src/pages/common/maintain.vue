@@ -26,7 +26,7 @@ export default class Maintain extends Vue {
 
   private async refresh() {
     try {
-      await AccountApi.menuList({ loading: false, errorHandle: false })
+      await AccountApi.getCurrent({ loading: false, errorHandle: false })
       redirectToLogin()
     } catch (error) {
       if (error.response && error.response.status) {

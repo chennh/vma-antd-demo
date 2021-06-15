@@ -1,23 +1,16 @@
 import {
-  adminInfoSession
+  loginRespSession
 } from '@/storage'
-
-// 未读消息
-export interface MessageUnRead {
-  // 动态
-  view: number
-  // 通知
-  notice: number
-}
+import AccountLoginResp from '../api/common/v1.0/definitions/AccountLoginResp'
 
 export interface State {
   // 版本号
   version: string
   // 当前登录用户
-  // adminInfo: LoginBO
+  loginResp: AccountLoginResp
 }
 
 export default {
   version: '1.0.0',
-  // adminInfo: adminInfoSession.getJSON() as LoginBO,
+  loginResp: loginRespSession.getJSON() as AccountLoginResp,
 }

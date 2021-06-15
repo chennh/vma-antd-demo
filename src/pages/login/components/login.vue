@@ -37,18 +37,20 @@
         <div class="login-form-item">
           <div class="login-form-code">
             <div class="code-img"
-                 @click="clickQRCode">
-              <img :src="qrCodeUrl">
+                 @click="clickCaptchaCode">
+              <a-spin :spinning="captchaCode.loading">
+                <img :src="captchaCode.image">
+              </a-spin>
             </div>
             <login-form-input placeholder="请输入验证码"
                               icon="icon-login-yanzhengma"
                               class="animated"
-                              :class="{'shake invalid': !validate.qrCode.valid}"
+                              :class="{'shake invalid': !validate.captchaCode.valid}"
                               :maxlength="4"
-                              v-model="entity.code"
-                              @blur="onBlurQRCode"
+                              v-model="entity.captchaCode"
+                              @blur="onBlurCaptchaCode"
                               @enter="login"
-                              ref="qrCode" />
+                              ref="captchaCode" />
           </div>
         </div>
         <div class="login-form-item">
@@ -82,18 +84,14 @@ import {
   getLoginAccount,
   broadcastLoginLocal,
   loginTypeLocal,
-  getLoginInfo,
-  setLoginInfo,
 } from '@/storage'
 import { loginInfo } from '@/config'
 import { redirectToHome } from '@/router'
 import RSAUtils from '@/assets/vendors/rsa'
 import * as actionTypes from '@/store/actionTypes'
-import { PlatformApi } from '@/api/common/v1.0/platformApi'
-import PlatLoginREQ from '@/api/common/v1.0/definitions/PlatLoginREQ'
 import { LoginTypeEnum, LOGIN_TYPE_CONST } from '@/constants'
-import OemLoginConfigBO from '@/api/super/v1.0/definitions/OemLoginConfigBO'
-import { SearchApi } from '@/api/common/v1.0/searchApi'
+import AccountLoginReq from '@/api/common/v1.0/definitions/AccountLoginReq'
+import { AccountApi } from '@/api/common/v1.0/accountApi'
 
 @Component({
   components: {
@@ -102,20 +100,19 @@ import { SearchApi } from '@/api/common/v1.0/searchApi'
 })
 export default class Login extends Vue {
   @Prop({
-    type: Number,
+    type: String,
     required: true,
   })
   public loginType!: LoginTypeEnum
 
   // 登录参数
-  private entity: PlatLoginREQ = {
+  private entity: AccountLoginReq = {
     account: '',
-    code: '',
-    index: '',
     password: '',
+    captchaCode: '',
+    captchaIndex: '',
     randomIndex: '',
-    type: this.loginType,
-    domain: location.hostname,
+    accountType: this.loginType,
   }
   // 校验
   private validate = {
@@ -125,16 +122,19 @@ export default class Login extends Vue {
     password: {
       valid: true,
     },
-    qrCode: {
+    captchaCode: {
       valid: true,
     },
   }
   // 记住我
   private rememberMe = false
   // 验证码图片
-  private qrCodeUrl = ''
+  private captchaCode = {
+    loading: false,
+    image: '',
+  }
   // 登录页相关信息
-  private loginInfo = getLoginInfo(LoginTypeEnum.SYSTEM) as OemLoginConfigBO
+  private loginInfo = loginInfo
 
   private loginBroadIndex = -1
 
@@ -146,25 +146,11 @@ export default class Login extends Vue {
   }
 
   private created() {
-    if (this.loginType === LoginTypeEnum.SUPER) {
-      this.loginInfo = loginInfo
-      setLoginInfo(this.loginType, loginInfo)
-    } else {
-      // 服务商配置的登录页信息
-      SearchApi.getLoginConfig({
-        domain: location.hostname,
-      }).then((data) => {
-        data = Object.assign({}, loginInfo, data)
-        this.loginInfo = data
-        setLoginInfo(LoginTypeEnum.SYSTEM, data)
-      })
-    }
-
     this.rememberMe = getLoginRememberMe(this.loginType)
     if (this.rememberMe) {
       this.entity.account = getLoginAccount(this.loginType)
     }
-    this.refreshQRCode()
+    this.refreshCaptchaCode()
 
     // 注册登录广播事件
     this.loginBroadIndex = broadcastLoginLocal.onBroadcast(() => {
@@ -190,7 +176,7 @@ export default class Login extends Vue {
     if (
       this.validateAccount() &&
       this.validatePassword() &&
-      this.validateQRCode()
+      this.validateCaptchaCode()
     ) {
       const entity = Object.assign({}, this.entity)
       loading.show()
@@ -199,7 +185,7 @@ export default class Login extends Vue {
           randomIndex,
           exponent,
           modulus,
-        } = await PlatformApi.getEncryption({
+        } = await AccountApi.getEncryption({
           loading: false,
         })
         RSAUtils.setMaxDigits(200)
@@ -207,13 +193,14 @@ export default class Login extends Vue {
         const key = RSAUtils.getKeyPair(exponent, '', modulus)
         entity.password = RSAUtils.encryptedString(key, entity.password)
         entity.randomIndex = randomIndex
-        const loginBO = await PlatformApi.platformLogin(entity, {
+        const loginBO = await AccountApi.login(entity, {
           loading: false,
         })
         if (
           !loginBO ||
-          !loginBO.resourceMenuList ||
-          loginBO.resourceMenuList.length === 0
+          !loginBO.accountBo ||
+          !loginBO.accountBo.resourceMenuList ||
+          loginBO.accountBo.resourceMenuList.length === 0
         ) {
           this.warning('暂无权限，请联系管理员')
         } else {
@@ -228,23 +215,28 @@ export default class Login extends Vue {
   }
 
   // 点击验证码图片时，刷新验证码
-  private clickQRCode() {
-    this.refreshQRCode()
-    this.entity.code = ''
-    if (this.$refs.qrCode) {
-      const qrCode = this.$refs.qrCode as any
-      qrCode.select()
+  private clickCaptchaCode() {
+    this.refreshCaptchaCode()
+    this.entity.captchaCode = ''
+    if (this.$refs.captchaCode) {
+      const captchaCode = this.$refs.captchaCode as any
+      captchaCode.select()
     }
   }
 
   // 刷新验证码
-  private refreshQRCode() {
-    PlatformApi.getVerificationCode().then((data) => {
-      this.entity.index = data.index
-      this.qrCodeUrl = /^data/i.test(data.code)
-        ? data.code
-        : `data:image/png;base64,${data.code}`
-    })
+  private refreshCaptchaCode() {
+    this.captchaCode.loading = true
+    AccountApi.getCaptcha({ width: 130, height: 48, codeCount: 4 })
+      .then((data) => {
+        this.entity.captchaIndex = data.randomIndex
+        this.captchaCode.image = /^data/i.test(data.base64)
+          ? data.base64
+          : `data:image/png;base64,${data.base64}`
+      })
+      .finally(() => {
+        this.captchaCode.loading = false
+      })
   }
 
   // 校验账号
@@ -258,8 +250,9 @@ export default class Login extends Vue {
   }
 
   // 校验验证码
-  private validateQRCode(qrCode: string = this.entity.code) {
-    return (this.validate.qrCode.valid = !!qrCode && /^.{4}$/.test(qrCode))
+  private validateCaptchaCode(captcha: string = this.entity.captchaCode) {
+    return (this.validate.captchaCode.valid =
+      !!captcha && /^.{4}$/.test(captcha))
   }
 
   private onBlurAccount() {
@@ -270,8 +263,8 @@ export default class Login extends Vue {
     this.validatePassword(this.entity.password)
   }
 
-  private onBlurQRCode() {
-    this.validateQRCode(this.entity.code)
+  private onBlurCaptchaCode() {
+    this.validateCaptchaCode(this.entity.captchaCode)
   }
 
   // 重新设置[记住我]

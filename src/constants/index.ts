@@ -22,20 +22,14 @@ import {
 // 登录类型
 export enum LoginTypeEnum {
   // 超级后台
-  SUPER = 1,
-  // 服务商后台
-  OEM = 2,
-  // 代理商后台
-  AGENT = 3,
-  // 企业后台
-  SYSTEM = 4,
+  SUPER = 'SUPER',
+  // 运营中心后台
+  OPERATIONS_CENTER = 'OPERATIONS_CENTER',
 }
 
-export const LOGIN_TYPE_CONST = new NumberConstant({
+export const LOGIN_TYPE_CONST = new Constant({
   [LoginTypeEnum.SUPER]: '超级后台',
-  [LoginTypeEnum.OEM]: '服务商后台',
-  [LoginTypeEnum.AGENT]: '代理商后台',
-  [LoginTypeEnum.SYSTEM]: '企业后台',
+  [LoginTypeEnum.OPERATIONS_CENTER]: '运营中心后台',
 })
 
 export * from './src/resource'

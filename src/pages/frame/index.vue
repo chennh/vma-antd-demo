@@ -1,7 +1,6 @@
 <template>
   <div style="height: 100%;">
-    <a-layout class="frame"
-              v-if="!isSystem || !invalidModule.visible">
+    <a-layout class="frame">
       <a-layout-sider v-model="collapsed"
                       :trigger="null"
                       :width="180"
@@ -40,11 +39,6 @@
                     :type="collapsed ? 'menu-unfold' : 'menu-fold'"
                     @click="() => (collapsed = !collapsed)" />
             <span class="trigger-split-line"></span>
-            <p class="header-info"
-               v-if="isSystem && enterprise.status === StatusEnum.TEST">
-              <a-icon type="info-circle" />
-              免费试用中，将于{{enterprise.overdueTime | date}}到期。如需订购请联系销售经理
-            </p>
           </template>
           <FrameHeaderUser />
         </a-layout-header>
@@ -53,38 +47,20 @@
           <router-view />
         </a-layout-content>
       </a-layout>
-
-      <FrameMessage v-if="isLogined && isSystem" />
     </a-layout>
-
-    <!-- 企业下账号已停用 -->
-    <a-modal v-model="invalidModule.visible"
-             :footer="null"
-             width="600px"
-             :closable="false"
-             :maskClosable="false"
-             v-if="isSystem">
-      <InvalidEnterprise v-if="invalidModule.visible" />
-    </a-modal>
-
   </div>
 </template>
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator'
 import LocalLogo from '@/assets/images/logo.png'
-import LoginStaffBO from '@/api/common/v1.0/definitions/LoginStaffBO'
 import RbacResourceMenuBO from '@/api/common/v1.0/definitions/RbacResourceMenuBO'
-import { frameActiveMenuSession, getLoginInfo, loginTypeLocal } from '@/storage'
+import { frameActiveMenuSession, loginTypeLocal } from '@/storage'
 import { AccountApi } from '@/api/common/v1.0/accountApi'
 import { ActiveMenu } from './definitions/definition'
-import LoginEnterpriseBO from '@/api/common/v1.0/definitions/LoginEnterpriseBO'
 import { Getter } from 'vuex-class'
 import { VueModule } from '@/utils'
 import EventBus from '@/constants/eventBus'
-import InvalidEnterprise from './components/invalidEnterprise.vue'
 import FrameHeaderUser from './components/headerUser/index.vue'
-import { StatusEnum } from '@/constants/src/enterprise'
-import FrameMessage from './components/message/index.vue'
 import { loginInfo } from '@/config'
 import { Location } from 'vue-router'
 import { LoginTypeEnum } from '@/constants'
@@ -92,15 +68,11 @@ import { LoginTypeEnum } from '@/constants'
 @Component({
   components: {
     FrameHeaderUser,
-    InvalidEnterprise,
-    FrameMessage,
   },
 })
 export default class Frame extends Vue {
   private collapsed: boolean = false
 
-  @Getter
-  private enterprise!: LoginEnterpriseBO
   @Getter
   private resourceMenuList!: RbacResourceMenuBO[]
   @Getter
@@ -113,7 +85,6 @@ export default class Frame extends Vue {
   private isSystem!: boolean
 
   private invalidModule = VueModule.create()
-  private StatusEnum = StatusEnum
   private loginInfo = loginInfo
 
   // 默认打开的菜单
@@ -145,16 +116,6 @@ export default class Frame extends Vue {
   }
 
   protected created() {
-    const loginType = loginTypeLocal.get()
-    if (loginType && loginType !== String(LoginTypeEnum.SUPER)) {
-      this.loginInfo = getLoginInfo((loginType as unknown) as LoginTypeEnum)
-    }
-
-    // 监听显示账号禁用
-    this.$onBus(EventBus.Frame.invalid, () => {
-      this.invalidModule.show()
-    })
-
     // 监听菜单name跳转到路由
     this.$onBus(
       EventBus.Frame.goRouterByName,
